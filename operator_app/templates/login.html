@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru" class="h-100">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Авторизация</title>
+
+	<link id="favicon" rel="icon" href="/static/img/brand/favicon-offering.png" type="image/x-icon"/>
+
+	<!-- css -->
+	<link rel="stylesheet" href="{% static 'css/bootstrap.css' %}?v=10">
+	<link rel="stylesheet" href="{% static 'css/all.min.css' %}">
+
+	<script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+</head>
+
+<body class="auth-page d-flex h-100">
+
+	<div class="container-fluid m-auto">
+		<div class="row">
+			<main class="col-md-6 mx-auto col-lg-4 px-md-4 pt-3 pb-3">
+				<div class="card rounded-5 shadow-lg">
+					<div class="navbar-brand anim-up-dn pt-5 pb-0 ps-5 pe-5">
+						<img id="logo" src="/static/img/brand/logo-offering.svg" alt="">
+
+					</div> <!--/navbar-brand-->
+
+					<div class="card-body pt-5 pb-5 ps-5 pe-5">
+						<h1 class="h3 pb-3 mb-4 border-bottom text-center">
+							Пожалуйста, авторизуйтесь
+						</h1> <!-- /title -->
+
+						<form method="POST" action="" class="messages">
+							{% csrf_token %}
+							<div class="form-floating">
+								<input type="email" name="email" onfocus="this.value=''" class="form-control input-signin" id="email" placeholder="name@example.ru">
+								<label for="email">
+									Email
+								</label>
+							</div> <!-- /form-floating -->
+
+							<div class="form-floating">
+								<input type="password" name="password" class="form-control input-signin" id="password" placeholder="******">
+								<label for="password">
+									Пароль
+								</label>
+							</div> <!-- /form-floating -->
+
+							<div class="text-center mb-3 mt-3">
+								<div class="form-check form-check-inline">
+									<input class="form-check-input" id="rememberMe" name="rememberMe" type="checkbox" value="1">
+
+									<label class="form-check-label" for="rememberMe">
+										Запомнить меня
+									</label>
+								</div> <!-- /form-check -->
+							</div> <!-- /text-center -->
+
+							<button class="w-100 btn btn-lg btn-primary signIn" id="signIn">
+								Авторизоваться
+							</button> <!-- /btn -->
+						</form> <!-- /form -->
+					</div> <!-- /card-body -->
+
+				</div> <!-- /card -->
+			</main> <!-- /content -->
+		</div> <!-- /row -->
+	</div> <!-- /container-fluid -->
+
+	<!-- scripts -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+
+	<script>
+
+		var url = document.location.href;
+		var a = document.cookie.split(';');
+		var token = '';
+
+		for (i = 0; i < a.length; i++) {
+			var b = a[i].split('=');
+			b[0] = b[0].replace(/\s+/g, '');
+			if (b[0] == 'csrftoken') {
+				token = b[1];
+			}
+		};
+		
+		$('#signIn').on('click', function(event){
+			event.preventDefault();
+			var pwd = $('#password').val();
+			var mail = $('#email').val();
+			
+			var rememberMe = false;
+			if ($('#rememberMe').is(':checked')){
+				rememberMe = true;
+			};
+
+			$.ajax({
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'check_auth',
+					email: mail,
+					password: pwd,
+					remember_me: rememberMe
+				}
+			}).then(function(result){
+				$('.alert-danger').remove();
+				var answer = JSON.parse(result);
+				if(answer.detail){
+
+					var message_block = `
+						<div class="alert alert-danger" role="alert">
+							<div class="d-block">
+								${answer.detail}
+							</div>
+						</div>`;
+
+					$('.messages').prepend(message_block);
+				}else{
+					location.replace('/');
+				}
+			}).catch(function(err){
+				var x = 0;
+			});
+		})
+		
+	</script>
+
+</body>
+</html>
+

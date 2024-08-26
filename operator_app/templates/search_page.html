@@ -1,0 +1,418 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="row mb-4 mt-4">
+	<div class="col-12">
+		<div class="card">
+			<div class="card-body">
+				<div class="row">
+
+					<div class="card-header card-header-no-bg border-bottom-0">
+						<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2">
+							Поиск клиента по параметрам 
+						</div> <!-- /card-title -->
+					</div>
+
+					<div class="col-12 col-sm-3 mb-3">
+						<label for="telephone">
+							Номер телефона
+							<i class="fa-solid fa-circle-info text-info ms-1" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-content="11 цифр - 7(999) 777-66-55">
+							</i>
+						</label>
+						<input class="form-control" name="telephone" id="telephone" autocomplete="off" list="telephone" placeholder="7 (999) 999-99-99"/>
+					</div>
+
+					<div class="col-12 col-sm-3 mb-3">
+						<label for="email">
+							Email
+						</label>
+						<input class="form-control" autocomplete="off" name="email" id="email" placeholder="mail@mail.ru"/>
+					</div>
+
+					<div class="col-12 col-sm-3 mb-3">
+						<label for="card">
+							Номер карты
+							<i class="fa-solid fa-circle-info text-info ms-1" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-content="Первые 6 и последние 4 цифры карты">
+							</i>
+						</label>
+						<input class="form-control" autocomplete="off" name="card" id="card" placeholder="123456_7890"/>
+						<script>
+							$('#card').mask('999999_9999');
+						</script>
+					</div>
+
+					<div class="col-12 col-sm-3 mb-3">
+						<label for="trans_id">
+							ID - транзакции
+						</label>
+						<input class="form-control" autocomplete="off" name="trans_id" id="trans_id" placeholder="transaction-id"/>
+					</div>
+
+					<div class="col-12 col-sm-3 mb-3 row">
+						<label for="date_time_info">Поиск по дате и времени</label>
+						<div class="px-2">
+							<label class="switch">
+								<input id="date_time_info" type="checkbox">
+								<span class="slider round pl-3"></span>
+							</label>
+						</div>
+					</div>
+					
+				</div>
+
+				<div class="row datetime_search" hidden>
+
+					<div class="col-12 col-sm-3 mb-3">
+						<label for="date_time">
+							Дата и время
+							<i class="fa-solid fa-circle-info text-info ms-1" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-content="Формат - дд.мм.гггг час:мин">
+							</i>
+						</label>
+						<input class="form-control date_input" type="text" autocomplete="off" name="date_time" maxlength="17" id="date_time" placeholder="01.01.2023 21:21"/>
+
+						<div class="invalid-feedback">
+							Проверьте правильность формата дд.мм.гггг час:мин 
+						</div>
+						
+					</div>
+
+					<div class="col-12 col-sm-3 mb-3">
+						<label for="sum_pay">
+							Сумма списания
+						</label>
+						<input class="form-control" type="text" autocomplete="off" name="sum_pay" id="sum_pay" placeholder="499"/>
+
+					</div>
+
+					<div class="col-12 col-sm-3 mb-3">
+						<label for="success_pay" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-content="Ползунок влево - попытка списания; ползунок вправо - успешное списание">
+							Списание <i class="fa-solid fa-circle-info text-info ms-1"></i>
+						</label>
+						<div class="px-2">
+							<label class="switch">
+								<input id="success_pay" type="checkbox">
+								<span class="slider round pl-3"></span>
+							</label>
+						</div>
+					</div>
+
+				</div>
+
+				<div class="col-12 col-sm-3 mb-3">
+					<button id="showSearchResult" onclick="send_seach();" class="btn btn-primary">Показать результаты поиска</button>
+				</div>
+
+				<div class="text-center" id="loader" hidden>
+					<img src="{% static 'img/brand/loader.svg' %}" alt="">
+				</div>
+
+				
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row mb-4" id="result_error" hidden>
+	<div class="col-12">
+		<div class="card">
+			<div class="card-body">
+				<div class="row">
+					
+					<div class="card-header card-header-no-bg border-bottom-0">
+						<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2">
+							Ошибка запроса, проверьте входные данные и попробуйте повторить
+						</div> <!-- /card-title -->
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row mb-4" id="result_none" hidden>
+	<div class="col-12">
+		<div class="card">
+			<div class="card-body">
+				<div class="row">
+					
+					<div class="card-header card-header-no-bg border-bottom-0">
+						<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2">
+							Результатов не найдено!
+						</div> <!-- /card-title -->
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row mb-4" id="result_searcht" hidden>
+	<div class="col-12">
+		<div class="card">
+			<div class="card-body">
+				<div class="row">
+
+					<div class="card-header card-header-no-bg border-bottom-0">
+						<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2">
+							Результаты поиска
+						</div> <!-- /card-title -->
+					</div>
+
+					<div class="table-responsive">
+
+						<table id="TableToExport" class="table table-bordered text-nowrap mb-0 text-center">
+							<thead>
+								<tr>
+									<th rowspan="2">
+										Клиент
+									</th>
+									<th rowspan="2">
+										Номер карты
+									</th>
+									<th rowspan="2">
+										Номер телефона
+									</th>
+									<th rowspan="2">
+										Оффер
+									</th>
+									<th colspan="3" class="text-center">
+										Дата
+									</th>
+									<th rowspan="2">
+										Партнёр
+									</th>
+									<th rowspan="2">
+										Лендинг
+									</th>
+									<th rowspan="2">
+										Поток
+									</th>
+								</tr>
+								<tr>
+									<th>
+										Регистрация
+									</th>
+									<th>
+										Активация
+									</th>
+									<th>
+										Отписка
+									</th>
+								</tr>
+							</thead>
+							<tbody id="result_table">
+								
+							</tbody>
+						</table>
+
+					</div>
+
+				</div> <!-- /card-body -->
+			</div> <!-- /card-body -->
+		</div> <!-- /card -->
+	</div> <!-- /col -->
+</div> <!--/row-->
+
+<script type="text/javascript">
+
+	var url = document.location.href;
+	var a = document.cookie.split(';');
+	var token = '';
+	
+	for (i = 0; i < a.length; i++) {
+		var b = a[i].split('=');
+		b[0] = b[0].replace(/\s+/g, '');
+		if (b[0] == 'csrftoken') {
+			token = b[1];
+		}
+	};
+	
+	// установка масок на input
+	$.mask.definitions['h'] = "[0|1|2]";
+	$.mask.definitions['w'] = "[2]";
+	$.mask.definitions['o'] = "[0]";
+	$.mask.definitions['m'] = "[0|1|2|3|4|5]";
+	$.mask.definitions['y'] = "[0|1|2|3]";
+	$.mask.definitions['s'] = "[0|1]";
+	$.mask.definitions['q'] = "[2|3|4]";
+
+	$('#date_time').mask("y9.s9.wowq h9:m9");
+	$('#telephone').mask("7 (999) 999-99-99");
+
+	// Событие на checkbox
+	$('#date_time_info').on('change', function(){
+		if($('#date_time_info').is(':checked')){
+			$('.datetime_search').removeAttr('hidden');
+		}else{
+			$('#date_time').val('');
+			$('#sum_pay').val('');
+			$('#success_pay').prop('checked', false);
+			$('.datetime_search').attr('hidden', 'true');
+		}
+	});
+
+	// $('#date_input').on('input', function(){
+	// 	console.log('sss');
+		// var onlyNumberDate = $('#date_time').val().replace(/\D/g, "");
+		// console.log(onlyNumberDate);
+		// if(onlyNumberDate.length == 12){
+		// 	$.ajax({
+		// 		url: url,
+		// 		method: 'POST',
+		// 		data: {
+		// 			csrfmiddlewaretoken: token,
+		// 			type: 'check_date',
+		// 			date: $('#date_time').val()
+		// 		}
+		// 	}).then(function(result){
+		// 		console.log(result.status);
+		// 		if(result.status == 'ERR'){
+		// 			$('#date_time').addClass('is-invalid');
+		// 		}else{
+		// 			$('#date_time').removeClass('is-invalid');
+		// 		}
+		// 	}).catch(function(err){
+		// 		x = 0;
+		// 	})
+		// }
+	// });
+
+	// шаблон ячейки с данными либо без
+	function tdCell(val){
+		if(val){
+			var td = `<td>
+						${val}
+					  </td>`;
+		}else{
+			var td = `<td>
+						&mdash;
+					  </td>`;
+		};
+		return td;
+	};
+
+	// собственно отправка данных для поиск по параметров
+	function send_seach(){
+		if($('#date_time_info').is(':checked')){
+			var date_input = $('#date_time').val();
+			var sum_trans = $('#sum_pay').val();
+			var success_trans = $('#success_pay').is(':checked')?'good':'bad';
+		}else{
+			date_input = '';
+			sum_trans = '';
+			success_trans = '';
+		};
+		var phone = $('#telephone').val().replace(/\D/g, "");
+		
+		$("#result_error").attr("hidden", "true")
+		$("#result_none").attr("hidden", "true")
+		$("#result_searcht").attr("hidden", "true")
+
+		$('#showSearchResult').hide();
+		$('#loader').removeAttr("hidden");
+		$.ajax({
+			url: url,
+			method: 'POST',
+			data: {
+				csrfmiddlewaretoken: token,
+				type: 'table_line',
+				phone_post: phone,
+				email_post: $('#email').val(),
+				card_post: $('#card').val(),
+				date_time_post: date_input,
+				sum_trans_post: sum_trans,
+				trans_id: $('#trans_id').val(),
+				success_trans_post: success_trans
+			}
+		}).then(function(result){
+			var res = result.res;
+			$('#result_table').empty();
+			if (res == 'Ошибка запроса, проверьте входные данные и попробуйте повторить'){
+				$("#result_error").removeAttr('hidden');
+			}else{
+				if (res.length > 0){
+
+					for (let i = 0; i < res.length; i++){
+						
+						var table_line = ``;
+						if(res[i].email){
+							var email = res[i].email;
+						}else{
+							var email = '&mdash;'
+						};
+						var clientTb = `<tr>
+											<td>
+												<span class="small">
+													${email}
+												</span>
+												<span class="small">
+													<a href="/client/${res[i].id}/" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-title="Зайти в профиль">#${res[i].id}</a>
+												</span>
+											</td>`;
+
+						if (res[i].card){
+							var cardTb = `<td>
+											${res[i].card}
+										</td>`;
+						}else{
+							var cardTb = `<td>
+											&mdash;
+										</td>`;
+						};
+
+						var phoneTb = tdCell(res[i].phone);
+						var offerTb = tdCell(res[i].offer);
+						var regDateTb = tdCell(res[i].create_date);
+						var actDateTb = tdCell(res[i].activation_date);
+						var unsubDateTb = tdCell(res[i].unsub_date);
+						var partnerTb = tdCell(res[i].partner);
+						var landingTb = tdCell(res[i].landing);
+						var streamTb = `<td> ${res[i].stream}</td></tr>`;
+
+						table_line = clientTb + cardTb + phoneTb + offerTb + regDateTb + actDateTb + unsubDateTb + partnerTb + landingTb + streamTb;
+						
+						$('#result_table').append(table_line);
+					};
+					
+					$('#result_searcht').removeAttr('hidden');
+					var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+					var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+						return new bootstrap.Tooltip(tooltipTriggerEl)
+					});
+
+				} else {
+					$('#result_none').removeAttr("hidden");
+				}
+
+			}
+
+			$('#showSearchResult').show();
+			$('#loader').attr("hidden", "true");
+		}).catch(function(err){
+			$('#showSearchResult').show();
+			$('#loader').attr("hidden", "true");
+		})
+	};
+
+	// Отправка данных для поиска нажатием Enter
+	window.addEventListener('keyup', function(event){
+		if(event.keyCode == 13){
+			send_seach();
+		}
+	});
+
+	// Для перехода со стр клиента и поиска по номкру карты
+	var params = window.location.search;
+	if (params){
+		$('#card').val(params.split('=')[1]);
+		var newURL = location.href.split("?")[0];
+		window.history.pushState('object', document.title, newURL);
+		$('#showSearchResult').click();
+	};
+
+</script>
+
+{% endblock content %}

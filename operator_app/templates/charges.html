@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="row mb-4 mt-4">
+	<div class="col-12">
+		<div class="card">
+			<div class="card-body">
+				<div class="row">
+
+					<div class="card-header card-header-no-bg border-bottom-0">
+						<div class="row card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2">
+							Задайте период для выгрузки данных
+						</div> <!-- /card-title -->
+					</div>
+
+					<div class="row">
+						<div class="col-12 col-sm-3 mb-3">
+							<label class="form-label">
+								Период
+							</label> <!-- /form-label -->
+							<div class="input-group">
+								<span class="input-group-text">С</span>
+								<input class="form-control" value="{{ today }}" id="start_date_charge">
+								
+								<span class="input-group-text">По</span>
+								<input class="form-control" value="{{ today }}" id="end_date_charge">
+							</div> <!-- /input-group -->
+						</div>
+					</div>
+
+				</div>
+				<input id="media_url" value="{{ MEDIA_URL }}" hidden>
+				<button onclick="exportTransactions()" type="button" class="btn btn-secondary btn-light ms-3" id="sheetjsexport">
+					<b id="transactionsExportButtonInner">
+						Выгрузить в excel
+					</b>
+				</button>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+
+	var url = document.location.href;
+	var a = document.cookie.split(';');
+	var token = '';
+	
+	for (i = 0; i < a.length; i++) {
+		var b = a[i].split('=');
+		b[0] = b[0].replace(/\s+/g, '');
+		if (b[0] == 'csrftoken') {
+			token = b[1];
+		}
+	};
+
+	var media_url = $('#media_url').val();
+
+	function exportTransactions() {
+		setAwait();
+		$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'download_charges_back',
+					date_start_post: $("#start_date_charge").val(),
+					date_end_post: $("#end_date_charge").val(),
+				}
+			}
+		).then(function(result) {
+			var downloadREsponce = JSON.parse(result);
+			var link = document.createElement('a');
+			link.setAttribute('href', `/media/${downloadREsponce.folder}/${downloadREsponce.name}`);
+			link.setAttribute('download', `${downloadREsponce.name}`);
+			link.click();
+			returnBack();
+			return false;
+		}).catch(function(err) {
+			var x = 1;
+		});
+
+		function setAwait() {
+			var partnerExportButton = $('#sheetjsexport');
+			var partnerExportButtonInner = $('#transactionsExportButtonInner');
+			partnerExportButtonInner.html('Отчет выгружается...');
+			partnerExportButton.attr('disabled', '');
+		};
+		function returnBack() {
+			var partnerExportButton = $('#sheetjsexport');
+			var partnerExportButtonInner = $('#transactionsExportButtonInner');
+			partnerExportButtonInner.html('Выгрузить в excel');
+			partnerExportButton.removeAttr('disabled');
+		};
+	};
+	
+	// Отправка данных для поиска нажатием Enter
+	window.addEventListener('keyup', function(event){
+		if(event.keyCode == 13){
+			exportTransactions();
+		}
+	});
+
+</script>
+
+<script type="text/javascript">
+	$(function(){
+		$("#start_date_charge").datepicker();
+		$("#end_date_charge").datepicker();
+	});
+</script>
+
+{% endblock content %}

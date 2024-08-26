@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="row mb-4 mt-4">
+	<div class="col-12">
+		<div class="card">
+			<div class="card-body">
+				<div class="row">
+
+					<div class="card-header card-header-no-bg border-bottom-0">
+						<div class="row card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2">
+							Фильтр
+						</div> <!-- /card-title -->
+					</div>
+
+					<div class="row">
+						<div class="col-12 col-sm-3 mb-3">
+							<label class="form-label">
+								Период
+							</label> <!-- /form-label -->
+							<div class="input-group">
+								<span class="input-group-text">С</span>
+								<input class="form-control" value="{{ today }}" id="start_date">
+								
+								<span class="input-group-text">По</span>
+								<input class="form-control" value="{{ today }}" id="end_date">
+							</div> <!-- /input-group -->
+						</div>
+					</div>
+
+					<div class="col-12 col-sm-3 mb-3">
+						<label for="telephone">Номер телефона</label>
+						<input class="form-control" name="telephone" id="telephone" autocomplete="off" list="telephone" placeholder="7 (999) 999-99-99"/>
+					</div>
+
+					<div class="col-12 col-sm-3 mb-3">
+						<label for="email">Email</label>
+						<input class="form-control" autocomplete="off" name="email" id="email" placeholder="mail@mail.ru"/>
+					</div>
+
+					<div class="col-12 col-sm-3 mb-3">
+						<label for="card">Номер карты
+							<i class="fa-solid fa-circle-info text-info ms-1" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-content="Первые 6 и последние 4х цифры карты">
+							</i>
+						</label>
+						<input class="form-control" autocomplete="off" name="card" id="card" placeholder="123456_7890"/>
+						<script>
+							$('#card').mask('999999_9999');
+						</script>
+					</div>
+
+					<div class="col-12 col-sm-3 mb-3">
+						<label for="event_type">Событие</label>
+						<select class="form-select" name="event_type" id="event_type">
+							<option value="">Все события</option>
+							<option value="NOTE">Заметки по клиенту</option>
+							<option value="UNSUB">Отписка клиента</option>
+							<option value="EDIT">Редактирование клиента</option>
+							<option value="FIX_CALL">Последний звонок</option>
+							<option value="CHARG_REQ">Полный возврат</option>
+							<option value="SEPARATOR_CHARG_REQ">Частичный возврат</option>
+							<option value="PRE_CHARG_REQ">Запрос клиента на возврат</option>
+							<option value="FIX_TELEGRAM">Обращения по Telegram</option>
+							<option value="FIX_EMAIL">Обращения по почте</option>
+							<option value="DELETE_ACC">Удаление аккаунта</option>
+						</select>
+					</div>
+
+					<div class="col-12 col-sm-3 mb-3">
+						<label for="note_tags">Ключевые слова в заметках</label>
+						<input class="form-control" autocomplete="off" name="note_tags" id="note_tags" placeholder="слово"/>
+					</div>
+
+				</div>
+
+				<div class="col-12 col-sm-3 mb-3">
+					<button id="showSearchResult" onclick="send_seach();" class="btn btn-primary">Показать результаты поиска</button>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row mb-4" id="result_searcht">
+	<div class="col-12">
+		<div class="card">
+			<div class="card-body">
+				<div class="row">
+
+					<div class="card-header card-header-no-bg border-bottom-0">
+						<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2" id="period_history">
+							История действий за {{ today }}
+						</div> <!-- /card-title -->
+					</div>
+
+					<div class="table-responsive">
+						<table id="TableToExport" class="table table-bordered mb-0 text-center">
+
+							<thead>
+								<tr>
+									<th>Дата создания</th>
+									<th>Клиент</th>
+									<th>Номер карты</th>
+									<th>Номер телефона</th>
+									<th>Тип события</th>
+									<th>Данные</th>
+								</tr>
+							</thead>
+							<tbody id="result_table">
+								{% for history in history_today %}
+								<tr>
+									<td>{{ history.create_date }}</td>
+									<td>
+										<span class="small">
+											{{ history.email|nbash|safe }}
+										</span>
+										<span class="small">
+											<a href="/client/{{ history.client_id }}/" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-title="Зайти в профиль">#{{ history.client_id }}</a>
+										</span>
+									</td>
+									<td>{{ history.card|card_edit|safe }}</td>
+									<td>{{ history.phone|nbash|safe }}</td>
+									<td>{{ history.action|event_translate|safe }}</td>
+									<td>{{ history.description|event_translate|safe }}</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+
+						</table>
+					</div>
+				</div> <!-- /card-body -->
+			</div> <!-- /card-body -->
+		</div> <!-- /card -->
+	</div> <!-- /col -->
+</div> <!--/row-->
+
+<script type="text/javascript">
+
+	var url = document.location.href;
+	var a = document.cookie.split(';');
+	var token = '';
+	
+	for (i = 0; i < a.length; i++) {
+		var b = a[i].split('=');
+		b[0] = b[0].replace(/\s+/g, '');
+		if (b[0] == 'csrftoken') {
+			token = b[1];
+		}
+	};
+
+	$('#telephone').mask("7 (999) 999-99-99");
+
+	// шаблон ячейки с данными либо без
+	function tdCell(val){
+		if(val){
+			var td = `<td>
+						${val}
+					  </td>`;
+		}else{
+			var td = `<td>
+						&mdash;
+					  </td>`;
+		};
+		return td;
+	};
+
+	// собственно отправка данных для поиск по параметров
+	function send_seach(){
+		var phone = $('#telephone').val().replace(/\D/g, "");
+		$.ajax({
+			url: url,
+			method: 'POST',
+			data: {
+				csrfmiddlewaretoken: token,
+				type: 'table_line',
+				phone_post: phone,
+				email_post: $('#email').val(),
+				card_post: $('#card').val(),
+				action_post: $('#event_type').val(),
+				note_tags_post: $('#note_tags').val(),
+				date_start_post: $("#start_date").val(),
+				date_end_post: $("#end_date").val(),
+			}
+		}).then(function(result){
+			$('#period_history').empty();
+			$('#period_history').text(`История действий в период ${$("#start_date").val()} - ${$("#end_date").val()}`);
+			var res = result.res;
+			$('#result_table').empty();
+			for (let i = 0; i < res.length; i++){
+				
+				var table_line = ``;
+				if(res[i].email){
+					var email = res[i].email;
+				}else{
+					var email = '&mdash;'
+				};
+				var create_date = `
+								<tr>
+									<td>
+										${res[i].create_date}
+									</td>`;
+				var clientTb = `
+								<td>
+									<span class="small">
+										${email}
+									</span>
+									<span class="small">
+										<a href="/client/${res[i].client_id}/" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-title="Зайти в профиль">#${res[i].client_id}</a>
+									</span>
+								</td>`;
+
+				if (res[i].card){
+					var cardTb = `<td>
+									${res[i].card.replace('xxxxx', '*')}
+								  </td>`;
+				}else{
+					var cardTb = `<td>
+									&mdash;
+								  </td>`;
+				};
+				var phoneTb = tdCell(res[i].phone);
+				if (res[i].action == 'NOTE'){
+					var t_action = `<td>Добавление заметки</td>`;
+				}else if(res[i].action == 'UNSUB'){
+					var t_action = `<td>Отписка клиента</td>`;
+				}else if(res[i].action == 'EDIT'){
+					var t_action = `<td>Редактирование клиента</td>`;
+				}else if(res[i].action == 'FIX_CALL'){
+					var t_action = `<td>Фиксация последнего звонка</td>`;
+				}else if(res[i].action == 'CHARG_REQ'){
+					var t_action = `<td>Полный возврат денежных средств</td>`;
+				}else if(res[i].action == 'SEPARATOR_CHARG_REQ'){
+					var t_action = `<td>Частичный возврат</td>`;
+				}else if(res[i].action == 'DELETE_ACC'){
+					var t_action = `<td>Удаление аккаунта</td>`;
+				}else if(res[i].action == 'FIX_EMAIL'){
+					var t_action = `<td>Фиксация обращения по почте</td>`;
+				}else if(res[i].action == 'FIX_TELEGRAM'){
+					var t_action = `<td>Фиксация обращения по Telegram</td>`;
+				}else if(res[i].action == 'PRE_CHARG_REQ'){
+					var t_action = `<td>Запрос клиента на возврат</td>`;
+				}
+				var actionTb = t_action;
+				var descriptionTb;
+				if (res[i].description){
+					descriptionTb = `<td> ${res[i].description}</td></tr>`
+				}else{
+					descriptionTb = `<td> - </td></tr>`
+				}
+
+				table_line = create_date + clientTb + cardTb + phoneTb + actionTb + descriptionTb;
+				
+				$('#result_table').append(table_line);
+			};
+			
+			$('#result_searcht').removeAttr('hidden');
+			var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+			var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+				return new bootstrap.Tooltip(tooltipTriggerEl)
+			})
+		}).catch(function(err){
+			var x = 0;
+		})
+	};
+
+	// Отправка данных для поиска нажатием Enter
+	window.addEventListener('keyup', function(event){
+		if(event.keyCode == 13){
+			send_seach();
+		}
+	});
+
+</script>
+
+<script type="text/javascript">
+	$(function(){
+		$("#start_date").datepicker();
+		$("#end_date").datepicker();
+	});
+</script>
+
+{% endblock content %}

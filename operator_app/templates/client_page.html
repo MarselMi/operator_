@@ -1,0 +1,1038 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-12 col-sm">
+            <div class="card">
+
+                <div class="card-body">
+
+                    <div class="card-title h6 fw-bold text-uppercase border-start border-primary mb-3 mt-3 border-3 ps-2 row">
+                        <div class="row">
+                            
+                                Данные по клиенту #{{ id_client }}
+                            
+                            <div class="col-12 col-sm mx-auto" id="div_delete_button">
+                                {% if delete %}
+                                    <button class="btn btn-danger text-uppercase" id="delete" disabled>Аккаунт удален</a>
+                                {% else %}
+                                    <a class="btn btn-outline-danger text-center" data-bs-toggle="modal" data-bs-target="#deleteClientModal" id="delete">Удалить аккаунт</a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        
+
+                    </div> <!-- /card-title -->
+                    <div class="row">
+                        <div class="col-12 col-sm mb-3">
+                            <div class="table-responsive mt-3">
+                                <input id="coming_call_value" value="{{ phone }}" hidden/>
+                                <table class="table table-bordered text-nowrap mb-0 text-center">
+                                    <tbody>
+                                        <tr>
+                                            <th>Email</th>
+                                            <td id="newMail">
+                                                {{ client_information.email|nbash|safe }}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Телефон</th>
+                                            <td id="newPhone">{{ client_information.phone|nbash|safe }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Оффер</th>
+                                            <td>{{ client_information.offer|nbash|safe }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Номер карты</th>
+                                            <td>
+                                                {% if client_information.card %}
+                                                <span class="small">
+                                                    <a href="/?card_numb={{ client_information.card|card_edit|safe }}" data-bs-toggle="tooltip" data-bs-title="Поиск всех пользователей с похожей картой">
+                                                        {{ client_information.card|card_edit|safe }}
+                                                    </a>
+                                                </span>
+                                                {% else %}
+                                                &ndash; 
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Статус</th>
+                                            <td id="sub_table_status">
+                                                {% if client_information.unsub_date %}
+                                                    <span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill"> 
+                                                        Отписан
+                                                    </span>
+                                                {% elif client_information.status == 1 %}
+                                                    <span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill"> 
+                                                        Активен
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill"> 
+                                                        Активен
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div> <!-- /table-responsive -->
+                        </div>
+
+                        <div class="col-12 col-sm mb-3">
+                            <div class="table-responsive mt-3">
+                                <table class="table table-bordered text-nowrap mb-0 text-center">
+                                    <tbody>
+                                        <tr>
+                                            <th>Партнер</th>
+                                            <td>{{ client_information.partner|nbash|safe }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Дата регистраци</th>
+                                            <td>{{ client_information.registration_date|nbash|safe }}</td>
+                                        <tr>
+                                            <th>Оплачено до</th>
+                                            <td>{{ client_information.pay_to|nbash|safe }}</td>
+                                        </tr>
+                                            <th>Дата след списания</th>
+                                            <td>{{ client_information.next_rebill|nbash|safe }}</td>
+                                        </tr>
+                                            <th>IP</th>
+                                            <td> &ndash; </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div> <!-- /table-responsive -->
+                        </div>    
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+
+        <div class="card col-12 m-2 col-sm">
+            <div class="card-body row">
+
+                <div class="col-12 col-sm">
+
+                    <div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-3">
+                        <div class="col">Действия</div>
+                        
+                    </div> <!-- /card-title -->
+
+                    <div class="row">
+
+                        <div class="d-grid gap-2 col-12 col-sm mb-3 mx-auto">
+                            <a class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editClientModal" id="edit">Редактировать профиль</a>
+                        </div>
+
+                        <div class="d-grid gap-2 col-12 col-sm mb-3 mx-auto">
+                            <a class="btn btn-success" href="#" id="login_client">Войти под клиентом</a>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="row">
+
+                        <div class="d-grid gap-2 col-12 col-sm mb-3 mx-auto" id="unsub_change_button">
+                            {% if client_information.unsub_date %}
+                                <button class="btn btn-danger" disabled>Клиент отписан</button>
+                            {% else %}
+                                <a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#unsubModal" id="unsub_req">Отменить подписку</a>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2 col-12 col-sm mb-3 mx-auto">
+
+                            <a class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#noteModal" id="note_add">Добавить заметку</a>
+
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-12 col-sm mb-3 d-grid">
+
+                            <label class="mx-auto d-grid gap-2">
+                                <strong>Откуда поступило обращения: </strong>
+                            </label>
+
+                            <div class="row">
+
+                                <div class="d-grid gap-2 col-12 col-sm mx-auto">
+                                    <button class="btn btn-outline-info" onclick="showToast('Обращение зафиксировано'); setCall();" id="fix_call">
+                                        <div class="row">
+                                            <span>
+                                                Звонок
+                                            </span>
+                                            <span>
+                                                Обращений: <span id="call_count">{{ call_contacts }}</span>
+                                            </span>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <div class="d-grid gap-2 col-12 col-sm mx-auto">
+                                    <button class="btn btn-outline-info" onclick="showToast('Обращение зафиксировано'); setTelegram();" id="fix_telegram">
+                                        <div class="row">
+                                            <span>
+                                                Telegram
+                                            </span>
+                                            <span>
+                                                Обращений: <span id="telegram_count">{{ telegram_contacts }}</span>
+                                            </span>
+                                        </div>
+                                    </button>    
+                                </div>
+
+                                <div class="d-grid gap-2 col-12 col-sm mx-auto">
+                                    <button class="btn btn-outline-info" onclick="showToast('Обращение зафиксировано'); setEmail();" id="fix_email">
+                                        <div class="row">
+                                            <span>
+                                                Email
+                                            </span>
+                                            <span>
+                                                Обращений: <span id="email_count">{{ mail_contacts }}</span>
+                                            </span>
+                                        </div>
+                                    </button>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12 col-sm mb-3 d-grid">
+
+                            <label class="mx-auto">
+                                <strong>Действия по возврату: </strong>
+                            </label>
+
+                            <div class="row">
+
+                                <div class="d-grid gap-2 col-12 col-sm" id="pre_charg_button_req">
+                                    {% if client_information.pre_payment_request %}
+                                        <button class="btn btn-outline-warning text-center" disabled><strong>Запрос на возврат зафиксирован</strong></button>
+                                    {% else %} 
+                                        <button class="btn btn-warning text-center" onclick="pre_req_charg();" id="pre_payment_request">Клиент запрашивает возврат</button>
+                                    {% endif %}
+                                </div>
+
+                                <div class="d-grid gap-2 col-12 col-sm" id="charg_button_req">
+                                    {% if client_information.charge_date %}
+                                        <button class="btn btn-danger text-center" disabled><strong>Оформлен полный возврат</strong></button>
+                                    {% else %} 
+                                        <button class="btn btn-outline-danger text-center" data-bs-toggle="modal" data-bs-target="#chargModal" id="chargback_req">Оформить полный возврат</button>
+                                    {% endif %}
+                                </div>
+                                
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card col-12 m-2 col-sm">
+            <div class="card-body row">
+
+                <div class="col-12 col-sm">
+
+                    <div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-3">
+                        Последние действия
+                    </div> <!-- /card-title -->
+
+                    <div class="row">
+
+                        <div class="col-12 col-sm mb-3">
+                            <label class="fw-bold" for="note">Заметки по клиенту:</label>
+                            <div class="text" id="note">{{ client_information.note|nbash|safe }}</div>
+                        </div>
+
+                        <div class="col-12 col-sm mb-3">
+                            <label class="fw-bold" for="charg_req_date">Дата оформления полного возврата:</label>
+                            <div class="text" id="charg_req_date">{{ client_information.charge_date|nbash|safe }}</div>
+                        </div>
+
+                    </div>
+                    
+                    <div class="row">
+
+                        <div class="col-12 col-sm mb-3">
+                            <label class="fw-bold" for="last_contacts">Последнее взаимодействие:</label>
+                            <div class="text" id="last_contacts">
+                                {% if client_contacts %}
+                                    {{ client_contacts.type|contacts }} - {{ client_contacts.date|date_f|safe }}
+                                {% else %}
+                                    Звонок - {{ client_information.last_call|nbash|safe }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm mb-3">
+                            <label class="fw-bold" for="pre_charg_req_date">Запрос на возврат:</label>
+                            <div class="text" id="pre_charg_req_date">{{ client_information.pre_payment_request|nbash|safe }}</div>
+                        </div>
+                    
+                    </div>
+
+                    <div class="row">    
+
+                        <div class="col-12 col-sm mb-3">
+                            <label class="fw-bold" for="edit_date">Дата редактирования:</label>
+                            <div class="text" id="edit_date">{{ client_information.change_date|nbash|safe }}</div>
+                        </div>
+
+                        <div class="col-12 col-sm mb-3">
+                            <label class="fw-bold" for="unsub_date">Дата отписки:</label>
+                            <div class="text" id="unsub_date">{{ client_information.unsub_date|nbash|safe }}</div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    {% if table %}
+    <div class="row mt-4">
+        <div class="card col-12 m-2 col-sm">
+
+            <div class="card-header card-header-no-bg border-bottom-0">
+                <div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 row">
+
+                    <div class="col-12 col-sm-3">
+                        Статистика действий пользователя на сайте
+                    </div>
+
+                    <div class="col-12 col-sm-3">
+                        <div class="px-2">
+                            <label class="switch">
+                                <input id="client_actions" type="checkbox">
+                                <span class="slider round pl-3"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div> <!-- /card-title -->
+            </div> <!-- /card-header -->
+
+            <div class="col-12 col-sm client_actions_table">
+
+            </div>
+
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="card col-12 m-2 col-sm">
+
+            <div class="card-header card-header-no-bg border-bottom-0">
+                <div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 row">
+
+                    <div class="col-12 col-sm-3">
+                        Полная история по клиенту
+                        
+                    </div>
+
+                    <div class="col-12 col-sm-3">
+                        <div class="px-2">
+                            <label class="switch">
+                                <input id="show_history" type="checkbox">
+                                <span class="slider round pl-3"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div> <!-- /card-title -->
+            </div> <!-- /card-header -->
+
+            <div class="card-body pt-0 table_history_client" hidden>
+                <div class="table-responsive">
+                    <table class="table table-bordered text-nowrap mb-0 text-center">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Событие</th>
+                                <th>Описание</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history_add_row">
+                            {% for history in client_history_inf %}
+                            <tr>
+                                <td class="text-center">{{ history.create_date }}</td>
+                                <td>{{ history.action|event_translate|safe }}</td>
+                                <td>{{ history.description }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div> <!-- /table-responsive -->
+            </div> <!-- /card-body -->
+        </div> <!-- /card -->
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12 col-sm">
+            <div class="card mb-4">
+
+                <div class="card-header card-header-no-bg border-bottom-0">
+                    <div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2">
+                        Транзакции клиента
+                    </div> <!-- /card-title -->
+                </div> <!-- /card-header -->
+
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered text-nowrap mb-0 text-center">
+                            <thead>
+                                <tr>
+                                    <th>Transaction_ID</th>
+                                    <th>Дата</th>
+                                    <th>Тип</th>
+                                    <th>Статус</th>
+                                    <th>Банк</th>
+                                    <th>Карта</th>
+                                    <th>Сумма</th>
+                                    <th>Поток</th>
+                                    <th>Оффер</th>
+                                    <th>Ленд</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions_inf %}
+                                <tr>
+                                    <td class="text-center">{{ transaction.id }}</td>
+                                    <td class="text-center">{{ transaction.create_date }}</td>
+                                    <td> 
+                                        {% if transaction.type == 'REBILL' %}
+                                        <span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
+                                            Ребилл
+                                        </span>
+                                        {% elif transaction.type == 'SUBSCRIPTION' %}
+                                        <span class="badge text-bg-outline-info d-flex align-items-center justify-content-center rounded-pill">
+                                            Подписка
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if transaction.status == 'GOOD' %}
+                                            <span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
+                                                Успешно
+                                            </span>
+                                        {% else %}
+                                            <span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
+                                                Ошибка
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ transaction.issuer|bank_name|safe }}</td>
+                                    <td>{{ transaction.card|card_edit|safe }}</td>
+                                    <td>{{ transaction.amount }}</td>
+                                    <td>{{ transaction.stream }}</td>
+                                    <td>{{ transaction.offer }}</td>
+                                    <td>{{ transaction.landing }}</td>
+                                    <td id="transaction_{{ transaction.id }}">
+                                        {% if transaction.status == 'GOOD' and transaction.type != 'SUBSCRIPTION' %}
+
+                                            {% if transaction.refund == 0 or transaction.refund == '0' %} 
+
+                                                {% if transaction.charge_date %}
+                                                    <button class="btn btn-secondary" data-transaction-id="{{ transaction.id }}" disabled>В обработке</button> 
+                                                {% else %}
+                                                    <button 
+                                                        class="btn btn-warning charg_buttons" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#chargModalSep" 
+                                                        data-transaction-id="{{ transaction.id }}"
+                                                        data-transaction-sum="{{ transaction.amount }}">
+                                                            Частичный возврат: {{ transaction.amount }} р.
+                                                    </button>
+                                                {% endif %}
+
+                                            {% else %}
+
+                                                <div class="row">
+                                                    
+                                                    <div class="col-12 col-sm">
+                                                        <button class="btn btn-success" data-transaction-id="{{ transaction.id }}" disabled>Сумма возвращена</button>
+                                                    </div>
+
+                                                    {% if transaction.check_url %}
+
+                                                    <div class="col-12 col-sm">
+                                                        <a href="{{ transaction.check_url }}" target="_blank" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-title="Открыть ЧЕК в новой вкладке">
+
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-image" viewBox="0 0 16 16">
+                                                                <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                                                <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                                                            </svg>
+
+                                                        </a>
+                                                    </div>
+
+                                                    <div class="col-12 col-sm">
+                                                        <span onclick="copyTextToClipboard('{{ transaction.check_url }}'); return false;" type="button" class="small ms-1" data-bs-toggle="tooltip" data-bs-title="Скопировать URL для клиента">
+                                                            <i class="fa-regular fa-clipboard"></i>
+                                                        </span>
+                                                    </div>
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            {% endif %} 
+
+                                        {% else %}
+                                            &ndash;
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!-- /table-responsive -->
+                </div> <!-- /card-body -->
+
+            </div> <!-- /card-body -->
+        </div> <!-- /card -->
+    </div>
+    
+    <!-- Модальное окно для удаления аккаунта -->
+    <div class="modal fade" id="deleteClientModal" tabindex="-1" aria-labelledby="deleteClientModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="deleteClientModalLabel">Удалить аккаунт клиента</h1>
+                    <button type="button" id="clientCloseButton" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <p class="mb-0">
+                        Уверены, что надо удалить аккаунт клиента <b>#{{ id_client }}</b>?
+                    </p>
+                </div> <!-- /modal-body -->
+
+                <div class="modal-footer justify-content-center">
+
+                    <button type="button" class="btn btn-secondary text-white" data-bs-dismiss="modal">
+                        Нет
+                    </button>
+
+                    <button type="button" onclick="showToast('Аккаунт клиента удален'); deleteClientAcc('{{id_client}}');"  class="btn btn-primary">
+                        Да
+                    </button>
+
+                </div> <!-- /modal-footer -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для отписки -->
+    <div class="modal fade" id="unsubModal" tabindex="-1" aria-labelledby="unsubModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="unsubModalLabel">Отписать клиента</h1>
+                    <button type="button" id="unsubButton" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <p class="mb-0">
+                        Уверены, что надо отписать клиента <b>#{{ id_client }}</b>?
+                    </p>
+                </div> <!-- /modal-body -->
+
+                <div class="modal-footer justify-content-center">
+
+                    <button type="button" class="btn btn-secondary text-white" data-bs-dismiss="modal">
+                        Нет
+                    </button>
+    
+                    <button type="button" onclick="showToast('Клиенту отменили подписку'); unsubClient();"  class="btn btn-primary">
+                        Да, отписать
+                    </button>
+
+                </div> <!-- /modal-footer -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для запроса возврата -->
+    <div class="modal fade" id="chargModal" tabindex="-1" aria-labelledby="chargModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="chargModalLabel">Заявка на возврат</h1>
+                    <button type="button" id="chargCloseButton" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <p class="mb-0">
+                        Подтвердите полный возврат денежных средств <b>#{{ id_client }}</b>?
+                    </p>
+                </div> <!-- /modal-body -->
+
+                <div class="modal-footer justify-content-center">
+
+                    <button type="button" class="btn btn-secondary text-white" data-bs-dismiss="modal">
+                        Нет
+                    </button>
+    
+                    <button type="button" onclick="showToast('Отправлен запрос на возврат денежных средств'); chargReq();"  class="btn btn-primary">
+                        Подтверждаю
+                    </button>
+
+                </div> <!-- /modal-footer -->
+            </div>
+        </div>
+    </div>
+    <!-- Модальное окно для частичного возврата -->
+    <div class="modal fade" id="chargModalSep" tabindex="-1" aria-labelledby="chargModalSepLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="chargModalSepLabel">Частичный возврат</h1>
+                    <button type="button" id="chargSepCloseButton" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <p class="mb-0">
+                        Подтвердите частичный возврат на сумму: <b id="separator_charg_sum"></b> ?
+                    </p>
+                </div> <!-- /modal-body -->
+
+                <div class="modal-footer justify-content-center">
+
+                    <button type="button" class="btn btn-secondary text-white" data-bs-dismiss="modal">
+                        Нет
+                    </button>
+    
+                    <button type="button" onclick="separator_charg(event);" data-transaction-id="" data-transaction-sum="" class="btn btn-primary modal_separator_charg">
+                        Подтверждаю
+                    </button>
+
+                </div> <!-- /modal-footer -->
+            </div>
+        </div>
+    </div>
+  
+    <!-- Модальное окно для редактирования -->
+    <div class="modal fade" id="editClientModal" tabindex="-1" aria-labelledby="editClientModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Редактируем профиль #{{ id_client }}</h5>
+                    <button type="button" id="closeEdit" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class=" mb-3"> 
+                                    <label class="form-label" for="email">Email:</label>
+                                    <input class="form-control" name="modal_email" id="modal_email" value="" placeholder="Email" aria-label="Email">
+                                    <div class="invalid-feedback">
+                                        Неверный формат email
+                                    </div>
+                                </div>
+                                <div class=" mb-3"> 
+                                    <label class="form-label" for="email">Phone:</label>
+                                    <input class="form-control" name="modal_phone" id="modal_phone" value="" placeholder="7 (999) 999-99-99" aria-label="phone">
+                                </div>
+                                <div class=" mb-3"> 
+                                    <label class="form-label" for="email">Password:</label>
+                                    <input class="form-control" name="modal_password" id="modal_password" value="" placeholder="password" aria-label="password">
+                                </div> 
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" onclick="editClient();" class="btn btn-primary">Сохранить изменения</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления заметок -->
+    <div class="modal fade" id="noteModal" tabindex="-1" aria-labelledby="noteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="noteModalLabel">Заметка по клиенту #{{ id_client }}</h1>
+                    <button id="note_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <textarea class="form-control mb-2" id="new_note_text" name="client_notes" cols="20" rows="3" placeholder="Добавить заметки"></textarea>
+                </div> <!-- /modal-body -->
+
+                <div class="modal-footer justify-content-center">
+    
+                    <button type="button" onclick="sendNote(); showToast('Заметка добавлена');" class="btn btn-primary">
+                        Сохранить
+                    </button>
+
+                </div> <!-- /modal-footer -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        $('#client_actions').on('change', function(){
+            if($('#client_actions').is(':checked')){
+                $('.client_actions_table').removeAttr('hidden');
+                if (!$('.client_actions_table').find($('.table-responsive')).length){
+                    $.ajax({
+                        url: url,
+                        method: 'POST',
+                        data: {
+                            csrfmiddlewaretoken: token,
+                            type: 'action_table_req'
+                        }
+                    }).then(function(result){
+                        $('.client_actions_table').append(result.table);
+                        $( document ).ready(function() {
+                            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                                return new bootstrap.Tooltip(tooltipTriggerEl)
+                            })
+                        });
+                    }).catch(function(err){
+                        x = 0;
+                    });
+                }
+            }else{
+                $('.client_actions_table').attr('hidden', 'true');
+            }
+        });
+
+        // Событие на checkbox
+        $('#show_history').on('change', function(){
+            if($('#show_history').is(':checked')){
+                $('.table_history_client').removeAttr('hidden');
+            }else{
+                $('.table_history_client').attr('hidden', 'true');
+            }
+        });
+
+        var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+        var url = document.location.href;
+		var a = document.cookie.split(';');
+		var token = '';
+
+		for (i = 0; i < a.length; i++) {
+			var b = a[i].split('=');
+			b[0] = b[0].replace(/\s+/g, '');
+			if (b[0] == 'csrftoken') {
+			    token = b[1];
+			}
+		};
+
+        $("#modal_phone").mask("7 (999) 999-99-99");
+
+        // Возвращает текущую дату и время
+        function setNowTime(){
+            var d = new Date().toLocaleString({hour12: false,});
+            return d;
+        };
+
+        // Добавляет строку в таблицу
+        function append_table(date_time, action, description){
+            $('#history_add_row').prepend(
+                `<tr>
+                    <td class="text-center">${date_time}</td>
+                    <td>${action}</td>
+                    <td>${description}</td>
+                </tr>`
+            );
+        };
+
+        // Удаление аккаунта
+        function deleteClientAcc(client_id){
+            $('#clientCloseButton').click();
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: token,
+                    type: 'delete_client',
+                    delete_post: 1
+                }
+            }).then(function(result){
+                $('#div_delete_button').empty();
+                $('#div_delete_button').append(`<button class="btn btn-danger text-uppercase" id="delete" disabled>Аккаунт удален</a>`);
+                append_table(setNowTime(), 'Удаление аккаунта', setNowTime());
+            }).catch(function(err){
+                x = 0;
+            });
+        };
+
+        // Редактирование профиля
+        function edit_ajax(phone, mail, pwd){
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: token,
+                    type: 'edit_cl',
+                    phone_post: phone.replace(/\D/g, ""),
+                    email_post: mail,
+                    pwd_post: pwd
+                }
+            }).then(function(result){
+                if($('#modal_phone').val()){
+                    $('#newPhone').text($('#modal_phone').val().replace(/\D/g, ""));
+                };
+                $('#modal_password').val('');
+                $('#modal_email').val('');
+                $("#modal_phone").val('');
+            }).catch(function(err){
+                x = 0;
+            })
+        };
+
+        // Редактирование профиля
+        function editClient(){
+            if ($('#modal_email').val()){
+                if(re.test($('#modal_email').val())){
+                    $('#modal_email').removeClass('is-invalid');
+                    $('#newMail').text($('#modal_email').val());
+                    $('#edit_date').text(setNowTime());
+                    $('#closeEdit').click();
+                    showToast('Успешное редактирование'); 
+                    edit_ajax($('#modal_phone').val(), $('#modal_email').val(), $('#modal_password').val());
+                    append_table(setNowTime(), 'Редактирование клиента', setNowTime());
+                }else{
+                    $('#modal_email').addClass('is-invalid');
+                };
+            }else{
+                $('#edit_date').text(setNowTime());
+                $('#closeEdit').click();
+                showToast('Успешное редактирование'); 
+                edit_ajax($('#modal_phone').val(), $('#modal_email').val(), $('#modal_password').val());
+                append_table(setNowTime(), 'Редактирование клиента', setNowTime());
+            }
+        };
+
+        // Отписка
+        function unsubClient(){
+            $('#unsub_date').text(setNowTime());
+            $('#unsubButton').click();
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: token,
+                    type: 'unsub_cl',
+                    unsub_post: 1
+                }
+            }).then(function(result){
+                $('#sub_table_status').empty();
+                $('#unsub_change_button').empty();
+                var new_button = '<button class="btn btn-danger" disabled>Клиент отписан</button>';
+                var new_unsub_status = `<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill"> 
+                                            Отписан
+                                        </span>`;
+                $('#unsub_change_button').append(new_button);
+                $('#sub_table_status').append(new_unsub_status);
+                append_table(setNowTime(), 'Отписка клиента', setNowTime());
+            }).catch(function(err){
+                x = 0;
+            });
+        };
+
+        // Фикс звонка
+        function setCall(){
+            $('#last_contacts').text(`Звонок - ${setNowTime()}`);
+            var call_count = Number($('#call_count').text());
+            $('#call_count').text(call_count + 1);
+            // if ($('#coming_call_value').val()){
+            //     $('#newPhone').text($('#coming_call_value').val())
+            // };
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: token,
+                    type: 'fix_call',
+                    fix_call_post: 1
+                }
+            }).then(function(result){
+                append_table(setNowTime(), 'Фиксация обращения с телефона', setNowTime());
+            }).catch(function(err){
+                x = 0;
+            });
+        };
+        // Фикс Telegram
+        function setTelegram(){
+            $('#last_contacts').text(`Telegram - ${setNowTime()}`);
+            var tlg_count = Number($('#telegram_count').text());
+            $('#telegram_count').text(tlg_count + 1);
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: token,
+                    type: 'fix_telegram',
+                    fix_telegram_post: 1
+                }
+            }).then(function(result){
+                append_table(setNowTime(), 'Фиксация обращения с Telegram', setNowTime());
+            }).catch(function(err){
+                x = 0;
+            });
+        };
+        // Фикс email
+        function setEmail(){
+            $('#last_contacts').text(`Почта - ${setNowTime()}`);
+            var email_count = Number($('#email_count').text());
+            $('#email_count').text(email_count + 1);
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: token,
+                    type: 'fix_email',
+                    fix_email_post: 1
+                }
+            }).then(function(result){
+                append_table(setNowTime(), 'Фиксация обращения с почты', setNowTime());
+            }).catch(function(err){
+                x = 0;
+            });
+        };
+
+        // Заметка
+        function sendNote(){
+            var noteText = $('#new_note_text').val();
+            $('#note').text(noteText);
+            $('#note_close').click();
+            append_table(setNowTime(), 'Добавление заметки', `${setNowTime()} - ${noteText}`);
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: token,
+                    type: 'note_cl',
+                    note_post: noteText
+                }
+            }).then(function(result){
+                x = 1;
+            }).catch(function(err){
+                x = 0;
+            });
+            $('#new_note_text').val('');
+        };
+
+        // Запрос на возврат 
+        function pre_req_charg(){
+            $('#pre_charg_req_date').text(setNowTime());
+            append_table(setNowTime(), 'Запрос клиента на возврат', setNowTime());
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: token,
+                    type: 'pre_req_chargeback',
+                    req_post: 1
+                }
+            }).then(function(result){
+                var new_btn = '<button class="btn btn-outline-warning text-center" disabled><strong>Запрос на возврат зафиксирован</strong></button>';
+                $('#pre_charg_button_req').empty();
+                $('#pre_charg_button_req').append(new_btn);
+            }).catch(function(err){
+                x = 0;
+            });
+        };
+
+        // Полный возврат
+        function chargReq(){
+            $('#charg_req_date').text(setNowTime());
+            $('#chargCloseButton').click();
+            append_table(setNowTime(), 'Полный возврат денежных средств', setNowTime());
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: token,
+                    type: 'req_chargeback',
+                    req_post: 1
+                }
+            }).then(function(result){
+                var new_btn = '<button class="btn btn-danger text-center" disabled><strong>Оформлен полный возврат</strong></button>';
+                $('#charg_button_req').empty();
+                $('#charg_button_req').append(new_btn);
+                $('.crarg_buttons').removeClass('btn-warning');
+                $('.crarg_buttons').addClass('btn-secondary');
+                $('.crarg_buttons').text('Возврат запрошен');
+                $('.crarg_buttons').attr('disabled', 'true');
+            }).catch(function(err){
+                x = 0;
+            });
+        };
+
+        // Частичный возврат на вызов и изменения данных в модалке
+        $('.charg_buttons').on('click', function(){
+            var transaction_id = event.currentTarget.getAttribute('data-transaction-id');
+            var transaction_sum = event.currentTarget.getAttribute('data-transaction-sum');
+            $('#separator_charg_sum').text(`${transaction_sum} руб.`);
+            $('.modal_separator_charg').attr('data-transaction-id', transaction_id);
+            $('.modal_separator_charg').attr('data-transaction-sum', transaction_sum);
+            
+        });
+
+        // Частичный возврат
+        function separator_charg(event){
+            var transaction_id = event.currentTarget.getAttribute('data-transaction-id');
+            var transaction_sum = event.currentTarget.getAttribute('data-transaction-sum');
+            append_table(setNowTime(), 'Частичный возврат', `${setNowTime()} - Сумма возврата = ${transaction_sum}`);
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: token,
+                    type: 'separator_charge',
+                    transaction_id: transaction_id,
+                    transaction_sum: transaction_sum,
+                }
+            }).then(function(result){
+                showToast('Успешно! Запрос на частичный возврат в обработке!');
+                var button_charged = `<button class="btn btn-secondary" data-transaction-id="${transaction_id}" disabled>В обработке</button>`;
+                $(`#transaction_${transaction_id}`).empty();
+                $(`#transaction_${transaction_id}`).append(button_charged);
+                $('#chargSepCloseButton').click();
+            }).catch(function(err){
+                x = 0;
+            });
+        };
+
+        // Сообщение об успешном действии
+        function showToast(innerText){
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function(toastEl) {
+                $('#toast_content').text(innerText);
+                return new bootstrap.Toast(toastEl);
+            });
+            toastList.forEach(toast => toast.show());
+        };
+
+    </script>
+
+{% endblock content %}
